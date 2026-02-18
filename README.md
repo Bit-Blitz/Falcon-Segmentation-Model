@@ -156,10 +156,10 @@ The following visualizations show the model's performance on the off-road datase
 
 | Scene / Metric | Visualization |
 | :--- | :--- |
-| **Scenario 1** | ![Result 1](1.png) |
-| **Scenario 2** | ![Result 2](2.png) |
-| **Scenario 3** | ![Result 3](3.png) |
-| **Scenario 4** | ![Result 4](4.png) |
+| **Training Loss and Validation Mean IoU** | ![Training Progress](1.png) |
+| **Individual IoU progression of Classes over epochs** | ![IoU Progression](2.png) |
+| **Heatmap for Class-wise IOU** | ![Class-wise Heatmap](3.png) |
+| **Net IoU Improvement per Class** | ![IoU Improvement](4.png) |
 | **Confusion Matrix** | ![Confusion Matrix](Confused.jpeg) |
 
 ---

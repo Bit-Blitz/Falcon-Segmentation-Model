@@ -17,9 +17,9 @@ Our solution leverages **HRNet (High-Resolution Network)**, which maintains high
 The following flowchart illustrates the granular steps the system takes to navigate the desert:
 
 ```mermaid
-graph LR
+graph TD
     %% Data Flow
-    Input[Raw Dataset] --> Prep
+    Input["Raw Dataset"] --> Prep
     
     subgraph Prep ["1. The Preparation (dataset.py)"]
         direction TB

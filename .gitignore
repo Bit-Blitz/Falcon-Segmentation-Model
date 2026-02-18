@@ -19,11 +19,14 @@ venv.bak
 
 # Visualizations and Images
 *.png
+*.jpeg
+*.jpg
 !HRNET.png
 !1.png
 !2.png
 !3.png
 !4.png
+!Confused.jpeg
 
 # VS Code
 .vscode/

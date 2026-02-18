@@ -154,11 +154,13 @@ python test_optimized.py --model_path "best_hrnet_model.pth" --data_dir "path/to
 ## 📈 Results and Metrics
 The following visualizations show the model's performance on the off-road dataset across different epochs and scenarios:
 
-| Scenario 1 | Scenario 2 |
-| :---: | :---: |
-| ![Result 1](1.png) | ![Result 2](2.png) |
-| **Scenario 3** | **Scenario 4** |
-| ![Result 3](3.png) | ![Result 4](4.png) |
+| Scene / Metric | Visualization |
+| :--- | :--- |
+| **Scenario 1** | ![Result 1](1.png) |
+| **Scenario 2** | ![Result 2](2.png) |
+| **Scenario 3** | ![Result 3](3.png) |
+| **Scenario 4** | ![Result 4](4.png) |
+| **Confusion Matrix** | ![Confusion Matrix](Confused.jpeg) |
 
 ---
 

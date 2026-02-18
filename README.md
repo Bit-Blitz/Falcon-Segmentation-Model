@@ -195,7 +195,7 @@ python test.py --model_path "best_hrnet_model.pth" --data_dir "path/to/val" --us
 In our pursuit of a robust off-road segmentation model, we conducted a rigorous comparative study between the industry-standard **DeepLabV3** and the more modern **HRNet**.
 
 ### 🧪 The Baseline: DeepLabV3 + ResNet50
-We initially implemented a **DeepLabV3** architecture with a **ResNet50** backbone. Despite extensive hyperparameter tuning and augmentation, the model struggled to generalize to the fine-grained hazards of the desert, peaking at a **Mean IoU of 0.5785**.
+We initially implemented a **DeepLabV3** architecture with a **ResNet50** backbone. Despite extensive hyperparameter tuning and augmentation, the model struggled to generalize to the fine-grained hazards of the desert, peaking at a **Mean IoU of 0.6138**.
 
 | Feature | DeepLabV3 (ResNet50) | HRNet-W18 (Our Solution) |
 | :--- | :--- | :--- |
@@ -203,7 +203,12 @@ We initially implemented a **DeepLabV3** architecture with a **ResNet50** backbo
 | **Resolution Bottleneck** | Heavy (Aggressive Downsampling) | None (Maintains 1/4 resolution) |
 | **Contextual Strategy** | Atrous Convolution (ASPP) | Repeated Multi-Scale Fusion |
 | **Small Object Recall** | Low (Micro-features lost) | High (Edges preserved) |
-| **Validation mIoU** | 0.5785 | **Significant Improvement** |
+| **Validation mIoU** | 0.6138 | **Significant Improvement** |
+
+<p align="center">
+  <img src="Plots%20and%20Images/Comparison.png" width="800" alt="Architecture Comparison Chart">
+</p>
+
 
 #### 🔍 Why DeepLabV3 Underperformed
 1.  **Spatial Information Loss**: Standard ResNet backbones reduce images to a tiny fraction of their original size to extract semantics. In the desert, a distant "Rock" might only be 5x5 pixels; after 32x downsampling, that rock effectively disappears from the feature map.

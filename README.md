@@ -4,6 +4,9 @@
 ![Architecture](https://img.shields.io/badge/Model-HRNet--W18-green?style=for-the-badge)
 ![Framework](https://img.shields.io/badge/Framework-PyTorch-orange?style=for-the-badge)
 
+🚀 **[Download Trained Weights (Google Drive)](https://drive.google.com/drive/folders/1OWqhbMfdTDyrRRfMgkHW4eLXnvkNkNgW?usp=sharing)**
+
+
 ## 🌵 Project Overview
 This repository contains a state-of-the-art semantic segmentation pipeline specifically engineered for **Off-Road Desert Environments**, developed for the **Duality AI Offroad Hackathon**. 
 
@@ -238,6 +241,29 @@ The following metrics and visualizations document the model's evolution during t
 | **Semantic Confusion** | ![Confusion Matrix](Plots%20and%20Images/Confused.jpeg) | Analyzes pixel misclassification (e.g., Dry Bushes vs Ground Clutter). |
 | **Class Correlation** | ![Class-wise Heatmap](Plots%20and%20Images/3.png) | Identifies overlapping semantic features between desert textures. |
 | **mIoU Improvement** | ![IoU Improvement](Plots%20and%20Images/4.png) | Net gain in Intersection-over-Union across all semantic categories. |
+
+### 🏆 Final Testing Results
+After 30 epochs of training and fine-tuning, the model achieved the following performance on the final testing set:
+
+> **Final Mean IoU: 0.6489**
+
+| Class Name | Testing IoU |
+| :--- | :--- |
+| **Trees** | 0.8307 |
+| **Lush Bushes** | 0.7045 |
+| **Dry Grass** | 0.7004 |
+| **Dry Bushes** | 0.4844 |
+| **Ground Clutter** | 0.3798 |
+| **Flowers (600)** | 0.6650 |
+| **Logs** | 0.5534 |
+| **Rocks** | 0.5326 |
+| **Landscape** | 0.6583 |
+| **Sky** | 0.9800 |
+
+### 📂 Model Download
+The final optimized model weights are available for download here:
+🔗 **[Trained Weights Repository (Google Drive)](https://drive.google.com/drive/folders/1OWqhbMfdTDyrRRfMgkHW4eLXnvkNkNgW?usp=sharing)**
+
 
 ---
 

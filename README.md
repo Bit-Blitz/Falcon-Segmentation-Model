@@ -126,13 +126,18 @@ To maximize competition/deployment performance, we use **Test-Time Augmentation 
 pip install -r requirements.txt
 ```
 
-### 2. Training
+### 2. Download Dataset
+The model is trained on the **GHR2 - Off-Road Segmentation Desert** dataset. You can download the dataset from the official Duality AI link below:
+
+[**Download Falcon-Segmentation Dataset**](https://falcon.duality.ai/secure/documentation/hackathon-segmentation-desert?utm_source=hackathon&utm_medium=instructions&utm_campaign=GHR2)
+
+### 3. Training
 Run the training script with your dataset path:
 ```bash
 python train.py --data_root "path/to/dataset" --epochs 30 --batch_size 10
 ```
 
-### 3. Optimized Inference
+### 4. Optimized Inference
 Run the evaluation with Multi-scale and Post-processing enabled:
 ```bash
 python test.py --model_path "best_hrnet_model.pth" --data_dir "path/to/val" --use_multiscale --use_postprocess

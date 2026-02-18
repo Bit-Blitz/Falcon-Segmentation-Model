@@ -73,6 +73,9 @@ At the core of this project is an optimized HRNet-W18 backbone. Unlike tradition
 - **Multiscale Fusion**: We extract features from strides 4, 8, 16, and 32. All features are upsampled and concatenated to form a rich, 1920-channel representation that captures both fine-grained details (like rock edges) and global context (like the horizon).
 - **Early Layer Freezing**: To facilitate stable fine-tuning on specialized datasets, the model includes logic to freeze the initial stem and Stage 1 layers.
 
+![HRNet Architecture](HRNET.png)
+
+
 ### 2. Dataset Management (`dataset.py`)
 Off-road datasets often use non-contiguous, high-integer class IDs. This module handles:
 - **Class Remapping**: Automatically maps raw pixel values (100, 200, 300, etc.) to a standard 0-9 index range.
@@ -145,6 +148,17 @@ python test_optimized.py --model_path "best_hrnet_model.pth" --data_dir "path/to
 - `test_optimized.py`: High-performance inference script with TTA.
 - `utils.py`: Metric calculations and visualization helpers.
 - `requirements.txt`: Project dependencies.
+
+---
+
+## 📈 Results and Metrics
+The following visualizations show the model's performance on the off-road dataset across different epochs and scenarios:
+
+| Scenario 1 | Scenario 2 |
+| :---: | :---: |
+| ![Result 1](1.png) | ![Result 2](2.png) |
+| **Scenario 3** | **Scenario 4** |
+| ![Result 3](3.png) | ![Result 4](4.png) |
 
 ---
 

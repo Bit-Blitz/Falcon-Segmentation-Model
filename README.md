@@ -23,36 +23,36 @@ graph LR
     
     subgraph Prep ["1. The Preparation (dataset.py)"]
         direction TB
-        L1[Label Mapping] --> L2[Raw ID -> {0...9}]
-        L2 --> Aug[Albumentations]
-        Aug -->|Flip/Rotate/Noise| Norm[Standardized Tensor]
+        L1["Label Mapping"] --> L2["Raw ID -> {0...9}"]
+        L2 --> Aug["Albumentations"]
+        Aug -->|"Flip/Rotate/Noise"| Norm["Standardized Tensor"]
     end
 
     Prep --> Brain
     
     subgraph Brain ["2. The Vision (model_hrnet.py)"]
         direction TB
-        H1[HRNet-W18 Backbone] --> H2[Parallel Resolution Branches]
-        H2 --> H3[Multi-Scale Feature Fusion]
-        H3 --> H4[Stride-4,8,16,32 Concat]
+        H1["HRNet-W18 Backbone"] --> H2["Parallel Resolution Branches"]
+        H2 --> H3["Multi-Scale Feature Fusion"]
+        H3 --> H4["Stride-4,8,16,32 Concat"]
     end
 
     Brain --> Train
     
     subgraph Train ["3. The Optimization (train_hrnet.py)"]
         direction TB
-        O1[Hybrid Loss] --> O2[Weighted CE + Dice]
-        O2 --> O3[AMP - Mixed Precision]
-        O3 --> O4[Cosine LR Scheduler]
+        O1["Hybrid Loss"] --> O2["Weighted CE + Dice"]
+        O2 --> O3["AMP - Mixed Precision"]
+        O3 --> O4["Cosine LR Scheduler"]
     end
 
     Train --> Inference
     
     subgraph Inference ["4. The Final Exam (test_optimized.py)"]
         direction TB
-        F1[Multi-Scale TTA] --> F2[Scales: 0.75x, 1.0x, 1.25x]
-        F2 --> F3[Post-Processing]
-        F3 --> F4[Morphological Closing]
+        F1["Multi-Scale TTA"] --> F2["Scales: 0.75x, 1.0x, 1.25x"]
+        F2 --> F3["Post-Processing"]
+        F3 --> F4["Morphological Closing"]
     end
 
     Inference --> Res[mIoU Metric & Visualization]

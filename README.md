@@ -21,25 +21,25 @@ graph TD
     A[Raw Desert Image] --> B[Pixel Translation]
     A --> C[Ground Truth Mask]
     
-    subgraph "1. The Preparation (dataset.py)"
+    subgraph "1. The Preparation"
     B -->|Map ID | D[Standardized Data]
     C -->|Map ID | D
     D --> E[Data Augmentation: Flips, Noise, Sunlight Simulation]
     end
 
-    subgraph "2. The Brain (model_hrnet.py)"
+    subgraph "2. The Brain "
     E --> F[High-Resolution Vision System]
     F -->|Parallel Branches| G[Global Context + Tiny Details]
     end
 
-    subgraph "3. The Training Room (train_hrnet.py & loss.py)"
+    subgraph "3. The Training Room "
     G --> H{Is the Guess Correct?}
     H -->|No| I[Penalty Score: Hybrid CE + Dice Loss]
     I -->|Learn| F
     H -->|Yes| J[Saved Best Brain Weights]
     end
 
-    subgraph "4. The Final Exam (test_optimized.py)"
+    subgraph "4. The Final Exam"
     J --> K[Multi-Scale View: Look Close & Look Far]
     K --> L[Post-Cleaning: Remove Noise & Fill Holes]
     L --> M[Final Result: mIoU Score]

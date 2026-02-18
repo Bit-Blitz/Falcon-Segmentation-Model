@@ -58,10 +58,10 @@ Imagine the computer sees colors as weird code numbers (like "7100" for sand). T
 ### 2. The Eyes and Brain (`model_hrnet.py`)
 Normally, computers shrink images to look at them, which makes them lose detail. Our **HRNet** is different; it keeps the image's high resolution all the way through. It’s like having one eye that sees the big picture (the horizon) and another eye that sees tiny things (a small rock) at the same time.
 
-### 3. The Teacher (`loss.py` & `train_hrnet.py`)
+### 3. The Teacher (`loss.py` & `train.py`)
 These files act like a strict teacher. When the AI makes a guess, the `loss.py` script measures exactly how far off it was. If it misses a "Rock" (which is dangerous!), it gets a bigger penalty. Over 30 "lessons" (epochs), the AI gets smarter and smarter.
 
-### 4. The Double-Checker (`test_optimized.py`)
+### 4. The Double-Checker (`test.py`)
 When it's time for the final test, we don't just ask the AI to look at the photo once. We ask it to look at it from different distances and even upside down. Then, we use special filters to clean up any "static" in the result, like using a vacuum to clean up messy pixels.
 
 ---
@@ -89,13 +89,13 @@ Desert scenes suffer from heavy class imbalance (e.g., plenty of "Landscape" but
 - **Hybrid Loss**: Combines **Cross-Entropy (CE)** for pixel-wise classification accuracy and **Dice Loss** to optimize for region overlap and boundary precision.
 - **Weighted Optimization**: Allows for class-specific penalties, ensuring the model doesn't ignore small, critical classes.
 
-### 4. Training Engine (`train_hrnet.py`)
+### 4. Training Engine (`train.py`)
 A production-ready training script featuring:
 - **Automatic Mixed Precision (AMP)**: Speeds up training on NVIDIA GPUs by using float16 where possible.
 - **Dynamic Weight Schedule**: Automatically adjusts class weights during training (e.g., at epoch 5) to shift focus from "hard class learning" to "global stability."
 - **Cosine Annealing**: Smoothly decays the learning rate to find the global minimum.
 
-### 5. Advanced Inference (`test_optimized.py`)
+### 5. Advanced Inference (`test.py`)
 To maximize competition/deployment performance, we use **Test-Time Augmentation (TTA)**:
 - **Multi-Scale Inference**: Runs the image at 0.75x, 1.0x, and 1.25x scales.
 - **Morphological Post-Processing**: Uses OpenCV to perform "Closing" operations on specific classes (Dry Bushes/Ground Clutter), filling predicted holes and smoothing noise.
@@ -129,13 +129,13 @@ pip install -r requirements.txt
 ### 2. Training
 Run the training script with your dataset path:
 ```bash
-python train_hrnet.py --data_root "path/to/dataset" --epochs 30 --batch_size 10
+python train.py --data_root "path/to/dataset" --epochs 30 --batch_size 10
 ```
 
 ### 3. Optimized Inference
 Run the evaluation with Multi-scale and Post-processing enabled:
 ```bash
-python test_optimized.py --model_path "best_hrnet_model.pth" --data_dir "path/to/val" --use_multiscale --use_postprocess
+python test.py --model_path "best_hrnet_model.pth" --data_dir "path/to/val" --use_multiscale --use_postprocess
 ```
 
 ---
@@ -144,8 +144,8 @@ python test_optimized.py --model_path "best_hrnet_model.pth" --data_dir "path/to
 - `model_hrnet.py`: HRNetV2 architecture with multi-scale fusion.
 - `dataset.py`: FalconDataset with class mapping and Albumentations.
 - `loss.py`: Hybrid CE + Dice loss implementation.
-- `train_hrnet.py`: Main training loop with AMP and dynamic scheduling.
-- `test_optimized.py`: High-performance inference script with TTA.
+- `train.py`: Main training loop with AMP and dynamic scheduling.
+- `test.py`: High-performance inference script with TTA.
 - `utils.py`: Metric calculations and visualization helpers.
 - `requirements.txt`: Project dependencies.
 

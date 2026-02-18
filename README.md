@@ -154,6 +154,25 @@ python test.py --model_path "best_hrnet_model.pth" --data_dir "path/to/val" --us
 - `utils.py`: Metric calculations and visualization helpers.
 - `requirements.txt`: Project dependencies.
 
+## 🛠️ Trials & Improvements
+
+In our quest for the most robust off-road segmentation model, we experimented with multiple architectures before settling on HRNet.
+
+### 🧪 Experiment: DeepLabV3 + ResNet50
+We initially implemented a **DeepLabV3** model with a **ResNet50** backbone. Despite extensive tuning, this architecture reached a plateau with a **Mean IoU of 0.62**.
+
+#### 🔍 Why did DeepLabV3 struggle?
+DeepLabV3 relies on **Atrous Spatial Pyramid Pooling (ASPP)** to capture multi-scale context. However, it follows the traditional "Encoder-Decoder" paradigm:
+1.  **Spatial Loss**: The ResNet50 backbone aggressively downsamples the input image (to 1/16th or 1/32nd of its size) to extract heavy semantic features. 
+2.  **Resolution Recovery**: Recovering the lost fine-grained spatial information during the upsampling/decoding phase is inherently "noisy." 
+3.  **Desert Constraints**: In desert environments, critical obstacles like **Rocks**, **Logs**, and **Dry Bushes** are often very small. The heavy downsampling in DeepLabV3 caused these "micro-features" to blur or vanish, leading to poor accuracy on small hazard detection.
+
+#### 🚀 The HRNet Advantage
+The switch to **HRNet (High-Resolution Network)** was the turning point for this project:
+- **Parallel High-Res Streams**: Instead of recovering resolution from a low-res bottleneck, HRNet maintains high-resolution representations throughout the *entire* depth of the network.
+- **Continuous Fusion**: It connects high-to-low resolution sub-networks in parallel, repeatedly exchanging information across scales.
+- **Precision**: By never "losing" the high-resolution signal, the model retains the crisp edges of rocks and the delicate textures of bushes, allowing us to accurately map hazards that DeepLabV3 completely missed.
+
 ---
 
 ## 📈 Results and Metrics

@@ -17,33 +17,52 @@ Our solution leverages **HRNet (High-Resolution Network)**, which maintains high
 The following flowchart illustrates the granular steps the system takes to navigate the desert:
 
 ```mermaid
-graph TD
-    A[Raw Desert Image] --> B[Pixel Translation]
-    A --> C[Ground Truth Mask]
+graph LR
+    %% Data Flow
+    Input[Raw Dataset] --> Prep
     
-    subgraph "1. The Preparation (dataset.py)"
-    B -->|Map ID | D[Standardized Data]
-    C -->|Map ID | D
-    D --> E[Data Augmentation: Flips, Noise, Sunlight Simulation]
+    subgraph Prep ["1. The Preparation (dataset.py)"]
+        direction TB
+        L1[Label Mapping] --> L2[Raw ID -> {0...9}]
+        L2 --> Aug[Albumentations]
+        Aug -->|Flip/Rotate/Noise| Norm[Standardized Tensor]
     end
 
-    subgraph "2. The Brain (model_hrnet.py)"
-    E --> F[High-Resolution Vision System]
-    F -->|Parallel Branches| G[Global Context + Tiny Details]
+    Prep --> Brain
+    
+    subgraph Brain ["2. The Vision (model_hrnet.py)"]
+        direction TB
+        H1[HRNet-W18 Backbone] --> H2[Parallel Resolution Branches]
+        H2 --> H3[Multi-Scale Feature Fusion]
+        H3 --> H4[Stride-4,8,16,32 Concat]
     end
 
-    subgraph "3. The Training Room (train_hrnet.py & loss.py)"
-    G --> H{Is the Guess Correct?}
-    H -->|No| I[Penalty Score: Hybrid CE + Dice Loss]
-    I -->|Learn| F
-    H -->|Yes| J[Saved Best Brain Weights]
+    Brain --> Train
+    
+    subgraph Train ["3. The Optimization (train_hrnet.py)"]
+        direction TB
+        O1[Hybrid Loss] --> O2[Weighted CE + Dice]
+        O2 --> O3[AMP - Mixed Precision]
+        O3 --> O4[Cosine LR Scheduler]
     end
 
-    subgraph "4. The Final Exam (test_optimized.py)"
-    J --> K[Multi-Scale View: Look Close & Look Far]
-    K --> L[Post-Cleaning: Remove Noise & Fill Holes]
-    L --> M[Final Result: mIoU Score]
+    Train --> Inference
+    
+    subgraph Inference ["4. The Final Exam (test_optimized.py)"]
+        direction TB
+        F1[Multi-Scale TTA] --> F2[Scales: 0.75x, 1.0x, 1.25x]
+        F2 --> F3[Post-Processing]
+        F3 --> F4[Morphological Closing]
     end
+
+    Inference --> Res[mIoU Metric & Visualization]
+
+    %% Styling
+    style Prep fill:#f9f,stroke:#333,stroke-width:2px
+    style Brain fill:#bbf,stroke:#333,stroke-width:2px
+    style Train fill:#bfb,stroke:#333,stroke-width:2px
+    style Inference fill:#fbb,stroke:#333,stroke-width:2px
+    style Res fill:#fff,stroke:#333,stroke-width:4px
 ```
 
 ---

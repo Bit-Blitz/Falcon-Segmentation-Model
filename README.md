@@ -13,33 +13,36 @@ Our solution leverages **HRNet (High-Resolution Network)**, which maintains high
 
 ---
 
-## 🔄 System Flow: Process Overview
-The following chart outlines the sequential process from raw data to final evaluation:
+## 🔄 System Flow: From Pixels to Predictions
+The following flowchart illustrates the granular steps the system takes to navigate the desert:
 
 ```mermaid
 graph TD
-    subgraph "Phase 1: Preparation (dataset.py)"
-        A1["Import Raw Images/Masks"] --> A2["Map IDs to Index 0-9"]
-        A2 --> A3["Apply Albumentations"]
-        A3 --> A4["Generate DataLoader"]
+    A[Raw Desert Image] --> B[Pixel Translation]
+    A --> C[Ground Truth Mask]
+    
+    subgraph "1. The Preparation (dataset.py)"
+    B -->|Map ID | D[Standardized Data]
+    C -->|Map ID | D
+    D --> E[Data Augmentation: Flips, Noise, Sunlight Simulation]
     end
 
-    subgraph "Phase 2: Architecture (model_hrnet.py)"
-        A4 --> B1["Initialize HRNet-W18"]
-        B1 --> B2["Parallel Multi-Resolution View"]
-        B2 --> B3["High-Resolution Fusion"]
+    subgraph "2. The Brain (model_hrnet.py)"
+    E --> F[High-Resolution Vision System]
+    F -->|Parallel Branches| G[Global Context + Tiny Details]
     end
 
-    subgraph "Phase 3: Training (train_hrnet.py)"
-        B3 --> C1["Compute Hybrid Loss (CE + Dice)"]
-        C1 --> C2["Backpropagate & Learn"]
-        C2 --> C3["Save Best Validated Model"]
+    subgraph "3. The Training Room (train_hrnet.py & loss.py)"
+    G --> H{Is the Guess Correct?}
+    H -->|No| I[Penalty Score: Hybrid CE + Dice Loss]
+    I -->|Learn| F
+    H -->|Yes| J[Saved Best Brain Weights]
     end
 
-    subgraph "Phase 4: Evaluation (test_optimized.py)"
-        C3 --> D1["Run Multi-Scale TTA Inference"]
-        D1 --> D2["Apply Morphological Cleanup"]
-        D2 --> D3["Calculate Final mIoU"]
+    subgraph "4. The Final Exam (test_optimized.py)"
+    J --> K[Multi-Scale View: Look Close & Look Far]
+    K --> L[Post-Cleaning: Remove Noise & Fill Holes]
+    L --> M[Final Result: mIoU Score]
     end
 ```
 

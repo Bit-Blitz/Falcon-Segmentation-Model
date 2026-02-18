@@ -5,9 +5,19 @@
 ![Framework](https://img.shields.io/badge/Framework-PyTorch-orange?style=for-the-badge)
 
 ## 🌵 Project Overview
-This repository contains a state-of-the-art semantic segmentation pipeline specifically engineered for **Off-Road Desert Environments**. Navigating autonomous vehicles in desert terrains presents unique challenges: subtle texture differences between "Dry Bushes" and "Ground Clutter," varying lighting conditions, and the need for high-resolution spatial awareness to identify small obstacles like "Rocks" and "Logs."
+This repository contains a state-of-the-art semantic segmentation pipeline specifically engineered for **Off-Road Desert Environments**, developed for the **Duality AI Offroad Hackathon**. 
 
-Our solution leverages **HRNet (High-Resolution Network)**, which maintains high-resolution representations throughout the network, combined with a hybrid loss strategy and advanced inference techniques to achieve superior Mean IoU (mIoU).
+Navigating autonomous vehicles in desert terrains presents unique computer vision challenges:
+- **Texture Ambiguity**: Subtle differences between "Dry Bushes," "Ground Clutter," and "Landscape."
+- **Lighting Extremes**: Harsh desert sunlight and dust interference require robust data augmentation.
+- **Safety Criticality**: Small, dense obstacles like "Rocks" and "Logs" are high-priority hazards that traditional models often miss.
+
+Our solution leverages **HRNet (High-Resolution Network)**, maintained at high-resolution through parallel multiscale fusion, combined with a **Weighted Hybrid Loss** strategy and **Test-Time Augmentation (TTA)** to achieve a competitive Mean IoU (mIoU).
+
+### 🎯 Key Performance Targets
+- **High Recall for Hazards**: Prioritizing Rocks/Logs via loss weighting.
+- **Spatial Precision**: Maintaining pixel-perfect boundaries for navigable paths.
+- **Hardware Optimized**: Efficient training via **AMP (Automatic Mixed Precision)** on NVIDIA RTX hardware.
 
 ---
 
@@ -18,31 +28,36 @@ The following flowchart illustrates the granular steps the system takes to navig
 
 ```mermaid
 graph TD
-    A[Raw Desert Image] --> B[Pixel Translation]
+    A[Raw Desert Image] -->|65k LUT Remapping| B[Class-Standardized Pixels]
     A --> C[Ground Truth Mask]
     
-    subgraph "1. The Preparation"
-    B -->|Map ID | D[Standardized Data]
-    C -->|Map ID | D
-    D --> E[Data Augmentation: Flips, Noise, Sunlight Simulation]
+    subgraph "1. Engineering The Input"
+    B --> D[Standardized 384x384 Tensor]
+    C --> D
+    D --> E[Albumentations: ResizedCrop + Sun Jitter]
     end
 
-    subgraph "2. The Brain "
-    E --> F[High-Resolution Vision System]
-    F -->|Parallel Branches| G[Global Context + Tiny Details]
+    subgraph "2. The Parallel Architecture: HRNet-W18"
+    E --> F1[High-Res Stream Stride 4]
+    E --> F2[Mid-Res Stream Stride 8]
+    E --> F3[Low-Res Stream Stride 16]
+    E --> F4[Global Stream Stride 32]
+    F1 & F2 & F3 & F4 --> G[Cross-Resolution Multiscale Fusion]
+    G --> H[1920-Channel Feature Concatenation]
     end
 
-    subgraph "3. The Training Room "
-    G --> H{Is the Guess Correct?}
-    H -->|No| I[Penalty Score: Hybrid CE + Dice Loss]
-    I -->|Learn| F
-    H -->|Yes| J[Saved Best Brain Weights]
+    subgraph "3. The Weighted Training Room"
+    H --> I{Logit Prediction}
+    I -->|Backward Pass| J[Penalty: Weighted CE + Dice Loss]
+    J -->|GradScaler Step| H
+    I -->|Validation| K[Best Model Weights .pth]
     end
 
-    subgraph "4. The Final Exam"
-    J --> K[Multi-Scale View: Look Close & Look Far]
-    K --> L[Post-Cleaning: Remove Noise & Fill Holes]
-    L --> M[Final Result: mIoU Score]
+    subgraph "4. Professional Deployment Logic"
+    K --> L[Test-Time Augmentation: 0.75x to 1.25x Scaling]
+    L --> M[Geometric Voting: Flip + Jitter Ensemble]
+    M --> N[Morphological Cleanup: 3x3 Closing Kernel]
+    N --> O[Final Optimized Prediction]
     end
 ```
 
@@ -53,52 +68,57 @@ graph TD
 Building a robot that can see in the desert is hard because everything is the same color (sand and rocks). Here is how we solved it, script by script:
 
 ### 1. The Organizer (`dataset.py`)
-Imagine the computer sees colors as weird code numbers (like "7100" for sand). This file "translates" those codes into a simple list from 0 to 9. It also "toughens up" the data by making it blurry, dark, or flipped—so our AI doesn't get confused when it sees a real desert for the first time.
+This script acts as the data's "Universal Translator." Since raw dataset IDs are non-contiguous (e.g., 7100 for sand, 10000 for sky), we map them to a compact **0-9 index range**. It also handles real-time **Sun Simulation** using `RandomBrightnessContrast` and `GaussNoise`, ensuring the AI isn't blinded by glare or confused by sandy dust in the air.
 
-### 2. The Eyes and Brain (`model_hrnet.py`)
-Normally, computers shrink images to look at them, which makes them lose detail. Our **HRNet** is different; it keeps the image's high resolution all the way through. It’s like having one eye that sees the big picture (the horizon) and another eye that sees tiny things (a small rock) at the same time.
+### 2. The High-Resolution Brain (`model_hrnet.py`)
+Traditional models (like DeepLab or UNet) follow an "hourglass" shape—they shrink the image to understand it and then try to blow it back up. Our **HRNet-W18** is like having four parallel vision systems: one for fine details, one for objects, and two for global context. By constantly "talking" to each other (multiscale fusion), they never lose the tiny rocks while trying to see the big horizon.
 
-### 3. The Teacher (`loss.py` & `train.py`)
-These files act like a strict teacher. When the AI makes a guess, the `loss.py` script measures exactly how far off it was. If it misses a "Rock" (which is dangerous!), it gets a bigger penalty. Over 30 "lessons" (epochs), the AI gets smarter and smarter.
+### 3. The Objective-Based Teacher (`loss.py` & `train.py`)
+We don't just tell the AI "be correct." We tell it "Don't hit the rocks!" The `CombinedLoss` uses **Weighted Cross-Entropy** to penalize mistakes on small hazards (Rocks/Logs) more severely than mistakes on the empty Sky. We also use **Dice Loss** to ensure the shapes of bushes and paths are smooth and continuous.
 
-### 4. The Double-Checker (`test.py`)
-When it's time for the final test, we don't just ask the AI to look at the photo once. We ask it to look at it from different distances and even upside down. Then, we use special filters to clean up any "static" in the result, like using a vacuum to clean up messy pixels.
+### 4. The Expert Evaluator (`test.py`)
+During the "Final Exam," we look at the desert from multiple scales (0.75x, 1.0x, 1.25x) and even flip the image. This **Test-Time Augmentation (TTA)** helps the model confirm its predictions. Finally, we use **Morphological Post-Processing** (closing operations) to fill in tiny holes in predicted bush regions, mimicking how a human would see a solid object.
 
 ---
 
 ## 🏗️ Project Architecture & Components
 
-### 1. Model: HRNetV2_Segmentation (`model_hrnet.py`)
-At the core of this project is an optimized HRNet-W18 backbone. Unlike traditional encoders that downsample and then upsample, HRNet maintains high-resolution branches in parallel.
-- **Multiscale Fusion**: We extract features from strides 4, 8, 16, and 32. All features are upsampled and concatenated to form a rich, 1920-channel representation that captures both fine-grained details (like rock edges) and global context (like the horizon).
-- **Early Layer Freezing**: To facilitate stable fine-tuning on specialized datasets, the model includes logic to freeze the initial stem and Stage 1 layers.
+### 1. Architecture: HRNetV2 (Backbone: W18)
+Our model utilizes the **HRNet-W18** variant from the `timm` library. 
+- **Parallel Design**: Maintains four resolution branches (Stride 4, 8, 16, 32) in parallel.
+- **Multiscale Fusion**: Features from all branches are upsampled and concatenated to create a **1920-channel** high-dimensional feature map.
+- **Stage-Wise Freezing**: During training, we freeze the initial **Stem** and **Stage 1** layers. This preserves generic low-level edge features while allowing Stage 2-4 to adapt to specific desert textures (sand, wood, stone).
 
-![HRNet Architecture](Plots%20and%20Images/HRNET.png)
+### 2. Dataset Management & Sun Simulation
+The `FalconDataset` implementation includes a custom 65,536-entry **Lookup Table (LUT)** for $O(1)$ pixel remapping.
+- **Augmentation Pipeline**:
+    - `RandomResizedCrop(384x384)`: Simulates varying lens focal lengths and vehicle distances.
+    - `Rotate(10°)`: Handles vehicle pitching/rolling on uneven terrain.
+    - `Brightness/Contrast`: Mimics the harsh dynamic range of the desert sun.
+    - `GaussNoise`: Simulates sensor grain in low-light/high-dust conditions.
 
+### 3. Loss Strategy: Weighted Combined Loss
+$$Loss = \alpha \cdot CE(W) + \beta \cdot Dice\_Loss$$
+- **Cross-Entropy (CE)**: Focuses on pixel-wise classification. We apply a **1.5x to 3.0x weight** on hazards (Rocks, Logs, Dry Bushes).
+- **Dice Loss**: Optimizes for the mIoU metric directly by rewarding region overlap.
+- **Sky Dampening**: We reduce the weight of "Sky" (0.25x) as it is semantically simple and can dominate the gradient if left unweighted.
 
-### 2. Dataset Management (`dataset.py`)
-Off-road datasets often use non-contiguous, high-integer class IDs. This module handles:
-- **Class Remapping**: Automatically maps raw pixel values (100, 200, 300, etc.) to a standard 0-9 index range.
-- **Robust Augmentation**: Uses `Albumentations` to apply:
-    - `RandomResizedCrop`: Simulates the vehicle being at different distances from objects.
-    - `GaussNoise` & `BrightnessContrast`: Simulates dust interference and harsh desert sunlight.
-    - `Rotate` & `Flip`: Enhances spatial invariance.
+### 4. Training Loop: Dynamic Scheduling
+Training is optimized for the **NVIDIA RTX 4050 (6GB)**:
+- **Automatic Mixed Precision (AMP)**: Uses `float16` for faster tensor core computation.
+- **Batch Normalization (BN) Freezing**: BN layers are kept in `eval` mode to avoid instability caused by small batch sizes ($N=10$).
+- **Dynamic Weight Schedule**: 
+    - **Epoch 0-5**: High penalty on hazards to force early hazard recognition.
+    - **Epoch 5+**: Relaxed weights to allow the model to refine smooth boundaries on "Landscape" and "Trees."
 
-### 3. Loss Strategy: `CombinedLoss` (`loss.py`)
-Desert scenes suffer from heavy class imbalance (e.g., plenty of "Landscape" but few "Rocks").
-- **Hybrid Loss**: Combines **Cross-Entropy (CE)** for pixel-wise classification accuracy and **Dice Loss** to optimize for region overlap and boundary precision.
-- **Weighted Optimization**: Allows for class-specific penalties, ensuring the model doesn't ignore small, critical classes.
-
-### 4. Training Engine (`train.py`)
-A production-ready training script featuring:
-- **Automatic Mixed Precision (AMP)**: Speeds up training on NVIDIA GPUs by using float16 where possible.
-- **Dynamic Weight Schedule**: Automatically adjusts class weights during training (e.g., at epoch 5) to shift focus from "hard class learning" to "global stability."
-- **Cosine Annealing**: Smoothly decays the learning rate to find the global minimum.
-
-### 5. Advanced Inference (`test.py`)
-To maximize competition/deployment performance, we use **Test-Time Augmentation (TTA)**:
-- **Multi-Scale Inference**: Runs the image at 0.75x, 1.0x, and 1.25x scales.
-- **Morphological Post-Processing**: Uses OpenCV to perform "Closing" operations on specific classes (Dry Bushes/Ground Clutter), filling predicted holes and smoothing noise.
+### 5. Advanced Inference: TTA & Cleanup
+The evaluation pipeline in `test.py` goes beyond simple prediction:
+- **Test-Time Augmentation (TTA)**: 
+    - **Scales**: [0.75x, 1.0x, 1.25x] - allows the model to see small rocks at larger resolutions.
+    - **Flips**: Horizontal flipping confirms symmetrical features.
+    - **Jittering**: Small brightness adjustments (±10%) prevent sensitivity to exposure.
+- **Morphological Post-Processing**:
+    - Uses a $3 \times 3$ kernel **Closing** operation specifically on "Dry Bushes" and "Ground Clutter" to eliminate pixel isolated noise and fill legitimate predicted holes.
 
 ---
 
@@ -145,6 +165,22 @@ python test.py --model_path "best_hrnet_model.pth" --data_dir "path/to/val" --us
 
 ---
 
+## 💻 Recommended Hardware
+- **GPU**: NVIDIA RTX 3060 / 4050 or higher (Minimum 6GB VRAM recommended).
+- **RAM**: 16GB+ (8 workers used in DataLoader).
+- **Storage**: ~5GB for the dataset and visual logs.
+
+---
+
+## 📋 Technical Checklist
+- [x] **AMP Enabled**: Yes (GradScaler)
+- [x] **TTA Implementation**: Yes (0.75, 1.0, 1.25 + Flip)
+- [x] **Class Weighting**: Dynamic (Epoch 5 trigger)
+- [x] **Post-Processing**: Morphological (Closing)
+- [x] **Resolution**: 384x384 (Training) / Dynamic (Inference)
+
+---
+
 ## 🛠️ File Structure
 - `model_hrnet.py`: HRNetV2 architecture with multi-scale fusion.
 - `dataset.py`: FalconDataset with class mapping and Albumentations.
@@ -175,16 +211,19 @@ The switch to **HRNet (High-Resolution Network)** was the turning point for this
 
 ---
 
-## 📈 Results and Metrics
-The following visualizations show the model's performance on the off-road dataset across different epochs and scenarios:
+---
 
-| Scene / Metric | Visualization |
-| :--- | :--- |
-| **Training Loss and Validation Mean IoU** | ![Training Progress](Plots%20and%20Images/1.png) |
-| **Individual IoU progression of Classes over epochs** | ![IoU Progression](Plots%20and%20Images/2.png) |
-| **Heatmap for Class-wise IOU** | ![Class-wise Heatmap](Plots%20and%20Images/3.png) |
-| **Net IoU Improvement per Class** | ![IoU Improvement](Plots%20and%20Images/4.png) |
-| **Confusion Matrix** | ![Confusion Matrix](Plots%20and%20Images/Confused.jpeg) |
+## 📈 Performance Analysis & Metrics
+The following metrics and visualizations document the model's evolution during the **30-Epoch** training cycle.
+
+### 📊 Metric Breakdown
+| Insight / Scenario | Primary Visualization | Technical Detail |
+| :--- | :--- | :--- |
+| **Convergence Graph** | ![Training Progress](Plots%20and%20Images/1.png) | High initial loss due to aggressive hazard weighting, stabilizing after Epoch 10. |
+| **Class IoU Dynamics** | ![IoU Progression](Plots%20and%20Images/2.png) | Tracks individual class performance; note the steep climb for 'Rocks'. |
+| **Semantic Confusion** | ![Confusion Matrix](Plots%20and%20Images/Confused.jpeg) | Analyzes pixel misclassification (e.g., Dry Bushes vs Ground Clutter). |
+| **Class Correlation** | ![Class-wise Heatmap](Plots%20and%20Images/3.png) | Identifies overlapping semantic features between desert textures. |
+| **mIoU Improvement** | ![IoU Improvement](Plots%20and%20Images/4.png) | Net gain in Intersection-over-Union across all semantic categories. |
 
 ---
 

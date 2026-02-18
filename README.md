@@ -190,26 +190,26 @@ Our segmentation engine is built on robust statistical and geometric principles 
 
 ### 1. The Core Objective Function
 To achieve stability and better boundary definition, we use a hybrid loss function:
-$$ \mathcal{L}_{Total} = \mathcal{L}_{CE} + \mathcal{L}_{Dice} $$
+$$ \mathcal{L}_{\text{Total}} = \mathcal{L}_{\text{CE}} + \mathcal{L}_{\text{Dice}} $$
 
-#### A. Weighted Cross-Entropy Loss ($\mathcal{L}_{CE}$)
+#### A. Weighted Cross-Entropy Loss (CE)
 Used for pixel-level classification accuracy, specifically weighted to handle class imbalance:
-$$ \mathcal{L}_{CE} = -\sum_{c \in Classes} w_c \cdot y_c \log(\hat{y}_c) $$
+$$ \mathcal{L}_{\text{CE}} = -\sum_{c \in \text{Classes}} w_c \cdot y_c \log(\hat{y}_c) $$
 *Where $w_c$ is the dynamic weight multiplier for class $c$, $y_c$ is the ground truth probability, and $\hat{y}_c$ is the predicted probability.*
 
-#### B. Dice Loss ($\mathcal{L}_{Dice}$)
+#### B. Dice Loss (Dice)
 Focused on the overlap between regions, making it robust to the small size of hazard objects:
-$$ \mathcal{L}_{Dice} = 1 - \frac{2 \sum_{i} p_i g_i + \epsilon}{\sum_{i} p_i + \sum_{i} g_i + \epsilon} $$
+$$ \mathcal{L}_{\text{Dice}} = 1 - \frac{2 \sum_{i} p_i g_i + \epsilon}{\sum_{i} p_i + \sum_{i} g_i + \epsilon} $$
 *Where $p_i$ is the predicted pixel value, $g_i$ is the ground truth, and $\epsilon$ ($10^{-5}$) is a smoothing factor to prevent division by zero.*
 
 ### 2. Evaluation Metric: Intersection-over-Union (IoU)
 We evaluate every class based on its Jaccard Index (IoU), which measures the spatial overlap:
-$$ IoU = \frac{Area\ of\ Overlap}{Area\ of\ Union} = \frac{TP}{TP + FP + FN} $$
+$$ \text{IoU} = \frac{\text{Area of Overlap}}{\text{Area of Union}} = \frac{\text{TP}}{\text{TP} + \text{FP} + \text{FN}} $$
 *Where **TP** = True Positives, **FP** = False Positives, and **FN** = False Negatives.*
 
 ### 3. Test-Time Augmentation (TTA) Logic
 During inference, we ensemble multiple views of the same image to reduce variance:
-$$ \mathcal{P}_{final} = \frac{1}{n} \sum_{i=1}^{n} \text{Rescale}_{i}(\text{Model}(\text{T}_i(x))) $$
+$$ \mathcal{P}_{\text{final}} = \frac{1}{n} \sum_{i=1}^{n} \text{Rescale}_{i}(\text{Model}(\text{T}_i(x))) $$
 *Where $T_i$ represents geometric transformations (scaling/flipping) and $n$ is the total number of augmented passes.*
 
 ---

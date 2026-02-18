@@ -190,24 +190,33 @@ python test.py --model_path "best_hrnet_model.pth" --data_dir "path/to/val" --us
 - `utils.py`: Metric calculations and visualization helpers.
 - `requirements.txt`: Project dependencies.
 
-## 🛠️ Trials & Improvements
+## 🛠️ Comparative Analysis: DeepLabV3 vs. HRNet
 
-In our quest for the most robust off-road segmentation model, we experimented with multiple architectures before settling on HRNet.
+In our pursuit of a robust off-road segmentation model, we conducted a rigorous comparative study between the industry-standard **DeepLabV3** and the more modern **HRNet**.
 
-### 🧪 Experiment: DeepLabV3 + ResNet50
-We initially implemented a **DeepLabV3** model with a **ResNet50** backbone. Despite extensive tuning, this architecture reached a plateau with a **Mean IoU of 0.5785**.
+### 🧪 The Baseline: DeepLabV3 + ResNet50
+We initially implemented a **DeepLabV3** architecture with a **ResNet50** backbone. Despite extensive hyperparameter tuning and augmentation, the model struggled to generalize to the fine-grained hazards of the desert, peaking at a **Mean IoU of 0.5785**.
 
-#### 🔍 Why did DeepLabV3 struggle?
-DeepLabV3 relies on **Atrous Spatial Pyramid Pooling (ASPP)** to capture multi-scale context. However, it follows the traditional "Encoder-Decoder" paradigm:
-1.  **Spatial Loss**: The ResNet50 backbone aggressively downsamples the input image (to 1/16th or 1/32nd of its size) to extract heavy semantic features. 
-2.  **Resolution Recovery**: Recovering the lost fine-grained spatial information during the upsampling/decoding phase is inherently "noisy." 
-3.  **Desert Constraints**: In desert environments, critical obstacles like **Rocks**, **Logs**, and **Dry Bushes** are often very small. The heavy downsampling in DeepLabV3 caused these "micro-features" to blur or vanish, leading to poor accuracy on small hazard detection.
+| Feature | DeepLabV3 (ResNet50) | HRNet-W18 (Our Solution) |
+| :--- | :--- | :--- |
+| **Data Flow** | Serial (Down-then-Up) | Parallel (Constant High-Res) |
+| **Resolution Bottleneck** | Heavy (Aggressive Downsampling) | None (Maintains 1/4 resolution) |
+| **Contextual Strategy** | Atrous Convolution (ASPP) | Repeated Multi-Scale Fusion |
+| **Small Object Recall** | Low (Micro-features lost) | High (Edges preserved) |
+| **Validation mIoU** | 0.5785 | **Significant Improvement** |
+
+#### 🔍 Why DeepLabV3 Underperformed
+1.  **Spatial Information Loss**: Standard ResNet backbones reduce images to a tiny fraction of their original size to extract semantics. In the desert, a distant "Rock" might only be 5x5 pixels; after 32x downsampling, that rock effectively disappears from the feature map.
+2.  **Dilated Convolution Limits**: While Atrous (Dilated) convolutions help maintain field-of-view without losing resolution, they can suffer from "gridding effects" and still rely on a low-resolution backbone that has already discarded high-frequency spatial data.
+3.  **Noisy Upsampling**: Recovering detail through bilinear interpolation or transposed convolutions in the decoder stage often creates "fuzzy" boundaries, which is unacceptable for identifying sharp hazard edges like Fallen Logs.
 
 #### 🚀 The HRNet Advantage
-The switch to **HRNet (High-Resolution Network)** was the turning point for this project:
-- **Parallel High-Res Streams**: Instead of recovering resolution from a low-res bottleneck, HRNet maintains high-resolution representations throughout the *entire* depth of the network.
-- **Continuous Fusion**: It connects high-to-low resolution sub-networks in parallel, repeatedly exchanging information across scales.
-- **Precision**: By never "losing" the high-resolution signal, the model retains the crisp edges of rocks and the delicate textures of bushes, allowing us to accurately map hazards that DeepLabV3 completely missed.
+The transition to **HRNet** solved these fundamental spatial issues:
+- **Parallel Resolution Streams**: It doesn't just "go deep"; it "goes wide." A high-resolution sub-network runs in parallel with lower-resolution ones.
+- **Continuous Multi-Scale Interaction**: Instead of a single "skip connection," HRNet uses repeated fusion modules. High-res pixels get semantic context from low-res streams, while low-res streams keep their boundaries sharp using feedback from high-res streams.
+- **Texture Integrity**: For classes like "Dry Bushes" which share colors with "Landscape," the model relies heavily on texture. HRNet's ability to maintain high-resolution features ensures these subtle textures are never blurred.
+
+---
 
 ---
 

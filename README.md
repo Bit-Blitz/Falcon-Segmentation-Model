@@ -195,7 +195,7 @@ python test.py --model_path "best_hrnet_model.pth" --data_dir "path/to/val" --us
 In our quest for the most robust off-road segmentation model, we experimented with multiple architectures before settling on HRNet.
 
 ### 🧪 Experiment: DeepLabV3 + ResNet50
-We initially implemented a **DeepLabV3** model with a **ResNet50** backbone. Despite extensive tuning, this architecture reached a plateau with a **Mean IoU of 0.62**.
+We initially implemented a **DeepLabV3** model with a **ResNet50** backbone. Despite extensive tuning, this architecture reached a plateau with a **Mean IoU of 0.5785**.
 
 #### 🔍 Why did DeepLabV3 struggle?
 DeepLabV3 relies on **Atrous Spatial Pyramid Pooling (ASPP)** to capture multi-scale context. However, it follows the traditional "Encoder-Decoder" paradigm:

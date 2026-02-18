@@ -164,5 +164,30 @@ The following visualizations show the model's performance on the off-road datase
 
 ---
 
+## 🖼️ Visualizing Model Predictions
+The following gallery shows the evolution of the model's segmentation capabilities at different training stages:
+
+<p align="center">
+  <strong>Epoch 1: Initial Learning Phase</strong><br>
+  <img src="Plots%20and%20Images/vis_epoch_1.png" width="900" alt="Predictions at Epoch 1">
+</p>
+
+<br>
+
+<p align="center">
+  <strong>Epoch 25: Progressive Refinement</strong><br>
+  <img src="Plots%20and%20Images/vis_epoch_25.png" width="900" alt="Predictions at Epoch 25">
+</p>
+
+<br>
+
+<p align="center">
+  <strong>Epoch 38: Final High-Resolution Predictions</strong><br>
+  <img src="Plots%20and%20Images/vis_epoch_38.png" width="900" alt="Predictions at Epoch 38">
+</p>
+
+
+---
+
 ## 🌟 Acknowledgements
 Created for the Falcon-Segmentation project to advance autonomous navigation in unmapped desert terrains.

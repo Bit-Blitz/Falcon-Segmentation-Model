@@ -21,7 +21,8 @@ venv.bak
 *.png
 *.jpeg
 *.jpg
-!"Plots and Images/"
+!Plots and Images/
+!Plots and Images/**
 
 # VS Code
 .vscode/

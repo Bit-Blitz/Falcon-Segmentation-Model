@@ -73,7 +73,7 @@ At the core of this project is an optimized HRNet-W18 backbone. Unlike tradition
 - **Multiscale Fusion**: We extract features from strides 4, 8, 16, and 32. All features are upsampled and concatenated to form a rich, 1920-channel representation that captures both fine-grained details (like rock edges) and global context (like the horizon).
 - **Early Layer Freezing**: To facilitate stable fine-tuning on specialized datasets, the model includes logic to freeze the initial stem and Stage 1 layers.
 
-![HRNet Architecture](HRNET.png)
+![HRNet Architecture](Plots%20and%20Images/HRNET.png)
 
 
 ### 2. Dataset Management (`dataset.py`)
@@ -156,11 +156,11 @@ The following visualizations show the model's performance on the off-road datase
 
 | Scene / Metric | Visualization |
 | :--- | :--- |
-| **Training Loss and Validation Mean IoU** | ![Training Progress](1.png) |
-| **Individual IoU progression of Classes over epochs** | ![IoU Progression](2.png) |
-| **Heatmap for Class-wise IOU** | ![Class-wise Heatmap](3.png) |
-| **Net IoU Improvement per Class** | ![IoU Improvement](4.png) |
-| **Confusion Matrix** | ![Confusion Matrix](Confused.jpeg) |
+| **Training Loss and Validation Mean IoU** | ![Training Progress](Plots%20and%20Images/1.png) |
+| **Individual IoU progression of Classes over epochs** | ![IoU Progression](Plots%20and%20Images/2.png) |
+| **Heatmap for Class-wise IOU** | ![Class-wise Heatmap](Plots%20and%20Images/3.png) |
+| **Net IoU Improvement per Class** | ![IoU Improvement](Plots%20and%20Images/4.png) |
+| **Confusion Matrix** | ![Confusion Matrix](Plots%20and%20Images/Confused.jpeg) |
 
 ---
 

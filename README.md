@@ -22,8 +22,8 @@ graph TD
     A --> C[Ground Truth Mask]
     
     subgraph "1. The Preparation (dataset.py)"
-    B -->|Map ID 7100 to 8| D[Standardized Data]
-    C -->|Map ID 7100 to 8| D
+    B -->|Map ID | D[Standardized Data]
+    C -->|Map ID | D
     D --> E[Data Augmentation: Flips, Noise, Sunlight Simulation]
     end
 

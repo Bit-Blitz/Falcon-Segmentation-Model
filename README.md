@@ -18,31 +18,39 @@ The following flowchart illustrates the granular steps the system takes to navig
 
 ```mermaid
 graph TD
-    A[Raw Desert Image] --> B[Pixel Translation]
-    A --> C[Ground Truth Mask]
+    A["Raw RGB Image (PNG)"] --> B["Pixel Map Initialization"]
+    C["Raw 16-bit Mask"] --> B
     
-    subgraph "1. The Preparation"
-    B -->|Map ID | D[Standardized Data]
-    C -->|Map ID | D
-    D --> E[Data Augmentation: Flips, Noise, Sunlight Simulation]
+    subgraph "1. The Preparation (dataset.py)"
+    B --> B1["Map Multi-value IDs {100...10000} to {0-9}"]
+    B1 --> B2["Albumentations: Random Resized Crop (384x384)"]
+    B2 --> B3["Sunlight Simulation: Brightness, Contrast & Hue Shift"]
+    B3 --> B4["Spatial Invariance: Horizontal Flips & Rotations"]
+    B4 --> D["Normalized Standard Tensors"]
     end
 
-    subgraph "2. The Brain "
-    E --> F[High-Resolution Vision System]
-    F -->|Parallel Branches| G[Global Context + Tiny Details]
+    subgraph "2. The Brain (model_hrnet.py)"
+    D --> F1["HRNet-W18: High-Res Parallel Streams"]
+    F1 --> F2["Feature Extraction: Strides 4, 8, 16, 32"]
+    F2 --> F3["Multi-Scale Fusion (Upsample & Concat)"]
+    F3 --> G["1920-channel Rich Representation"]
     end
 
-    subgraph "3. The Training Room "
-    G --> H{Is the Guess Correct?}
-    H -->|No| I[Penalty Score: Hybrid CE + Dice Loss]
-    I -->|Learn| F
-    H -->|Yes| J[Saved Best Brain Weights]
+    subgraph "3. The Training Room (train_hrnet.py & loss.py)"
+    G --> H1["Hybrid Loss Computation"]
+    H1 --> H2["Weighted Weighted Cross-Entropy (Global Structure)"]
+    H2 --> H3["Dice Loss (Boundary Precision)"]
+    H3 --> I["AMP Mixed-Precision Backpropagation"]
+    I --> I1["Cosine Annealing LR Update"]
+    I1 --> J["Saved Checkpoint: best_hrnet_model.pth"]
     end
 
-    subgraph "4. The Final Exam"
-    J --> K[Multi-Scale View: Look Close & Look Far]
-    K --> L[Post-Cleaning: Remove Noise & Fill Holes]
-    L --> M[Final Result: mIoU Score]
+    subgraph "4. The Final Exam (test_optimized.py)"
+    J --> K["Test-Time Augmentation (TTA)"]
+    K --> K1["Multi-Scale Inference: {0.75x, 1.0x, 1.25x}"]
+    K1 --> K2["Horizontal Flip Aggregation"]
+    K2 --> L["Morphological Post-Processing (Closing)"]
+    L --> M["Final Metrics (mIoU) & Overlay Visualization"]
     end
 ```
 

@@ -13,56 +13,34 @@ Our solution leverages **HRNet (High-Resolution Network)**, which maintains high
 
 ---
 
-## 🔄 System Flow: From Pixels to Predictions
-The following flowchart illustrates the granular steps the system takes to navigate the desert:
+## 🔄 System Flow: Process Overview
+The following chart outlines the sequential process from raw data to final evaluation:
 
 ```mermaid
 graph TD
-    %% Data Flow
-    Input["Raw Dataset"] --> Prep
-    
-    subgraph Prep ["1. The Preparation (dataset.py)"]
-        direction TB
-        L1["Label Mapping"] --> L2["Raw ID -> {0...9}"]
-        L2 --> Aug["Albumentations"]
-        Aug -->|"Flip/Rotate/Noise"| Norm["Standardized Tensor"]
+    subgraph "Phase 1: Preparation (dataset.py)"
+        A1["Import Raw Images/Masks"] --> A2["Map IDs to Index 0-9"]
+        A2 --> A3["Apply Albumentations"]
+        A3 --> A4["Generate DataLoader"]
     end
 
-    Prep --> Brain
-    
-    subgraph Brain ["2. The Vision (model_hrnet.py)"]
-        direction TB
-        H1["HRNet-W18 Backbone"] --> H2["Parallel Resolution Branches"]
-        H2 --> H3["Multi-Scale Feature Fusion"]
-        H3 --> H4["Stride-4,8,16,32 Concat"]
+    subgraph "Phase 2: Architecture (model_hrnet.py)"
+        A4 --> B1["Initialize HRNet-W18"]
+        B1 --> B2["Parallel Multi-Resolution View"]
+        B2 --> B3["High-Resolution Fusion"]
     end
 
-    Brain --> Train
-    
-    subgraph Train ["3. The Optimization (train_hrnet.py)"]
-        direction TB
-        O1["Hybrid Loss"] --> O2["Weighted CE + Dice"]
-        O2 --> O3["AMP - Mixed Precision"]
-        O3 --> O4["Cosine LR Scheduler"]
+    subgraph "Phase 3: Training (train_hrnet.py)"
+        B3 --> C1["Compute Hybrid Loss (CE + Dice)"]
+        C1 --> C2["Backpropagate & Learn"]
+        C2 --> C3["Save Best Validated Model"]
     end
 
-    Train --> Inference
-    
-    subgraph Inference ["4. The Final Exam (test_optimized.py)"]
-        direction TB
-        F1["Multi-Scale TTA"] --> F2["Scales: 0.75x, 1.0x, 1.25x"]
-        F2 --> F3["Post-Processing"]
-        F3 --> F4["Morphological Closing"]
+    subgraph "Phase 4: Evaluation (test_optimized.py)"
+        C3 --> D1["Run Multi-Scale TTA Inference"]
+        D1 --> D2["Apply Morphological Cleanup"]
+        D2 --> D3["Calculate Final mIoU"]
     end
-
-    Inference --> Res[mIoU Metric & Visualization]
-
-    %% Styling
-    style Prep fill:#f9f,stroke:#333,stroke-width:2px
-    style Brain fill:#bbf,stroke:#333,stroke-width:2px
-    style Train fill:#bfb,stroke:#333,stroke-width:2px
-    style Inference fill:#fbb,stroke:#333,stroke-width:2px
-    style Res fill:#fff,stroke:#333,stroke-width:4px
 ```
 
 ---

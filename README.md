@@ -202,7 +202,10 @@ $$
 \mathcal{L}_{\text{CE}} = -\sum_{c \in \text{Classes}} w_c \cdot y_c \log(\hat{y}_c)
 $$
 
-*Where $w_c$ is the dynamic weight multiplier for class $c$, $y_c$ is the ground truth probability, and $\hat{y}_c$ is the predicted probability.*
+**Variables:**
+- $w_c$: Dynamic weight multiplier for class $c$.
+- $y_c$: Ground truth probability.
+- $\hat{y}_c$: Predicted probability.
 
 #### B. Dice Loss (Dice)
 Focused on the overlap between regions, making it robust to the small size of hazard objects:
@@ -211,7 +214,10 @@ $$
 \mathcal{L}_{\text{Dice}} = 1 - \frac{2 \sum_{i} p_i g_i + \epsilon}{\sum_{i} p_i + \sum_{i} g_i + \epsilon}
 $$
 
-*Where $p_i$ is the predicted pixel value, $g_i$ is the ground truth, and $\epsilon$ ($10^{-5}$) is a smoothing factor to prevent division by zero.*
+**Variables:**
+- $p_i$: Predicted pixel value.
+- $g_i$: Ground truth value.
+- $\epsilon$: Smoothing factor ($10^{-5}$) to prevent division by zero.
 
 ### 2. Evaluation Metric: Intersection-over-Union (IoU)
 We evaluate every class based on its Jaccard Index (IoU), which measures the spatial overlap:
@@ -220,7 +226,10 @@ $$
 \text{IoU} = \frac{\text{Area of Overlap}}{\text{Area of Union}} = \frac{\text{TP}}{\text{TP} + \text{FP} + \text{FN}}
 $$
 
-*Where **TP** = True Positives, **FP** = False Positives, and **FN** = False Negatives.*
+**Metrics:**
+- **TP**: True Positives.
+- **FP**: False Positives.
+- **FN**: False Negatives.
 
 ### 3. Test-Time Augmentation (TTA) Logic
 During inference, we ensemble multiple views of the same image to reduce variance:
@@ -229,7 +238,10 @@ $$
 \mathcal{P}_{\text{final}} = \frac{1}{n} \sum_{i=1}^{n} \text{Rescale}_{i}(\text{Model}(\text{T}_i(x)))
 $$
 
-*Where $T_i$ represents geometric transformations (scaling/flipping) and $n$ is the total number of augmented passes.*
+**Variables:**
+- $T_i$: Geometric transformations (scaling/flipping).
+- $n$: Total number of augmented passes.
+- $x$: Original input image.
 
 ---
 

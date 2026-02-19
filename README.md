@@ -346,7 +346,7 @@ The following gallery shows the evolution of the model's segmentation capabiliti
 <br>
 
 <p align="center">
-  <strong>Epoch 38: Final High-Resolution Predictions</strong><br>
+  <strong>Epoch 30: Final High-Resolution Predictions</strong><br>
   <img src="Plots%20and%20Images/vis_epoch_38.png" width="900" alt="Predictions at Epoch 38">
 </p>
 

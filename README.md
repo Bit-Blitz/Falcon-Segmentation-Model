@@ -284,7 +284,10 @@ The transition to **HRNet** solved these fundamental spatial issues:
 - **Parallel Resolution Streams**: It doesn't just "go deep"; it "goes wide." A high-resolution sub-network runs in parallel with lower-resolution ones.
 - **Continuous Multi-Scale Interaction**: Instead of a single "skip connection," HRNet uses repeated fusion modules. High-res pixels get semantic context from low-res streams, while low-res streams keep their boundaries sharp using feedback from high-res streams.
 - **Texture Integrity**: For classes like "Dry Bushes" which share colors with "Landscape," the model relies heavily on texture. HRNet's ability to maintain high-resolution features ensures these subtle textures are never blurred.
-
+<p align="center">
+  <strong>Epoch 1: Initial Learning Phase</strong><br>
+  <img src="Plots%20and%20Images/HRNET.png" width="1200" alt="Predictions at Epoch 1">
+</p>
 ---
 
 ---
